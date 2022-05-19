@@ -35,7 +35,7 @@ fn resolve(opts: &Options) -> Result<(), error::Error> {
   let (base, rel) = match opts.subcmds.len() {
     2 => (&opts.subcmds[0], &opts.subcmds[1]),
     1 => {
-      io::stdin().read_to_string(&mut buf);
+      io::stdin().read_to_string(&mut buf)?;
       (&buf, &opts.subcmds[0])
     },
     _ => return Err(error::Error::InvalidArgument("Expected: <base> <relative>, or: STDIN <relative>".to_string())),

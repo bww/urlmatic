@@ -1,26 +1,34 @@
+use std::io;
 use std::fmt;
 use std::num;
 
 use url;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum Error {
   NoSuchCommand(String),
   InvalidArgument(String),
   MissingArgument(String),
   ParseIntError(num::ParseIntError),
   ParseUrlError(url::ParseError),
+  IOError(io::Error),
 }
 
 impl From<std::num::ParseIntError> for Error {
-  fn from(error: std::num::ParseIntError) -> Self {
-    Self::ParseIntError(error)
+  fn from(err: std::num::ParseIntError) -> Self {
+    Self::ParseIntError(err)
   }
 }
 
 impl From<url::ParseError> for Error {
-  fn from(error: url::ParseError) -> Self {
-    Self::ParseUrlError(error)
+  fn from(err: url::ParseError) -> Self {
+    Self::ParseUrlError(err)
+  }
+}
+
+impl From<io::Error> for Error {
+  fn from(err: io::Error) -> Self {
+    Self::IOError(err)
   }
 }
 
@@ -32,6 +40,7 @@ impl fmt::Display for Error {
       Self::MissingArgument(msg) => write!(f, "Missing argument: {}", msg),
       Self::ParseIntError(err) => err.fmt(f),
       Self::ParseUrlError(err) => err.fmt(f),
+      Self::IOError(err) => err.fmt(f),
     }
   }
 }
