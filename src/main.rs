@@ -75,7 +75,7 @@ fn resolve(_: &Options, cmd: &ResolveOptions) -> Result<(), error::Error> {
 
 fn trim(_: &Options, cmd: &TrimOptions) -> Result<(), error::Error> {
   let mut base = url::Url::parse(&cmd.url)?;
-  let mut segs = base.path_segments().ok_or_else(|| error::Error::InvalidArgument("URL has no path".to_string()))?;
+  let mut segs = base.path_segments().ok_or_else(|| error::Error::InvalidArgument(format!("URL has no path: {}", &cmd.url)))?;
   let mut trim: Vec<&str> = Vec::new();
   
   loop {
