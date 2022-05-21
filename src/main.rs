@@ -17,8 +17,10 @@ pub struct Options {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-  #[clap(author, version, about, long_about = None)]
+  #[clap()]
   Resolve(ResolveOptions),
+  #[clap()]
+  Trim(TrimOptions),
 }
 
 #[derive(Args, Debug)]
@@ -27,6 +29,13 @@ struct ResolveOptions {
   base: Option<String>,
   #[clap(long)]
   relative: String,
+}
+
+#[derive(Args, Debug)]
+struct TrimOptions {
+  #[clap(long)]
+  count: i32,
+  url: String,
 }
 
 fn main() {
@@ -43,6 +52,7 @@ fn cmd() -> Result<(), error::Error> {
   let opts = Options::parse();
   match &opts.command {
     Command::Resolve(sub) => resolve(&opts, &sub),
+    Command::Trim(sub)    => trim(&opts, &sub),
   }
 }
 
@@ -59,6 +69,32 @@ fn resolve(_: &Options, cmd: &ResolveOptions) -> Result<(), error::Error> {
   let base = url::Url::parse(&base)?;
   let resolved = base.join(&cmd.relative)?;
   println!("{}", resolved);
+  
+  Ok(())
+}
+
+fn trim(_: &Options, cmd: &TrimOptions) -> Result<(), error::Error> {
+  let mut base = url::Url::parse(&cmd.url)?;
+  let mut segs = base.path_segments().ok_or_else(|| error::Error::InvalidArgument("URL has no path".to_string()))?;
+  let mut trim: Vec<&str> = Vec::new();
+  
+  loop {
+    if let Some(seg) = segs.next() {
+      trim.push(seg);
+    }else{
+      break;
+    }
+  }
+  
+  for _ in 0..cmd.count {
+    match trim.pop() {
+      Some(_) => {},
+      None => break,
+    };
+  }
+  
+  base.set_path(&trim.join("/"));
+  println!("{}", base);
   
   Ok(())
 }
