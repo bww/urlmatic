@@ -4,12 +4,29 @@ use std::io::{self, Read};
 use std::process;
 
 use url;
-use structopt::StructOpt;
+use clap::{Parser, Subcommand, Args};
 
-#[derive(StructOpt)]
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
 pub struct Options {
-  cmd: String,
-  subcmds: Vec<String>,
+  #[clap(long)]
+  debug: bool,
+  #[clap(subcommand)]
+  command: Command,
+}
+
+#[derive(Subcommand, Debug)]
+enum Command {
+  #[clap(author, version, about, long_about = None)]
+  Resolve(ResolveOptions),
+}
+
+#[derive(Args, Debug)]
+struct ResolveOptions {
+  #[clap(long)]
+  base: Option<String>,
+  #[clap(long)]
+  relative: String,
 }
 
 fn main() {
@@ -23,27 +40,25 @@ fn main() {
 }
 
 fn cmd() -> Result<(), error::Error> {
-  let opts = Options::from_args();
-  match opts.cmd.as_str() {
-    "resolve" | "res" => resolve(&opts),
-    _                 => Err(error::Error::NoSuchCommand(opts.cmd)),
+  let opts = Options::parse();
+  match &opts.command {
+    Command::Resolve(sub) => resolve(&opts, &sub),
   }
 }
 
-fn resolve(opts: &Options) -> Result<(), error::Error> {
-  let mut buf = String::new();
-  let (base, rel) = match opts.subcmds.len() {
-    2 => (&opts.subcmds[0], &opts.subcmds[1]),
-    1 => {
+fn resolve(_: &Options, cmd: &ResolveOptions) -> Result<(), error::Error> {
+  let base = match cmd.base.to_owned() {
+    Some(base) => base,
+    None => {
+      let mut buf = String::new();
       io::stdin().read_to_string(&mut buf)?;
-      (&buf, &opts.subcmds[0])
+      buf
     },
-    _ => return Err(error::Error::InvalidArgument("Expected: <base> <relative>, or: STDIN <relative>".to_string())),
   };
   
-  let base = url::Url::parse(base)?;
-  let res = base.join(rel)?;
-  println!("{}", res);
+  let base = url::Url::parse(&base)?;
+  let resolved = base.join(&cmd.relative)?;
+  println!("{}", resolved);
   
   Ok(())
 }
