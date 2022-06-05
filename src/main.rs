@@ -27,13 +27,12 @@ enum Command {
 struct ResolveOptions {
   #[clap(long)]
   base: Option<String>,
-  #[clap(long)]
-  relative: String,
+  url: String,
 }
 
 #[derive(Args, Debug)]
 struct TrimOptions {
-  #[clap(long)]
+  #[clap(long, short='n')]
   count: i32,
   url: String,
 }
@@ -67,7 +66,7 @@ fn resolve(_: &Options, cmd: &ResolveOptions) -> Result<(), error::Error> {
   };
   
   let base = url::Url::parse(&base)?;
-  let resolved = base.join(&cmd.relative)?;
+  let resolved = base.join(&cmd.url)?;
   println!("{}", resolved);
   
   Ok(())
