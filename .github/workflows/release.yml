@@ -20,7 +20,7 @@ jobs:
       - name: Build
         run: cargo build --release --all-features
       - name: Package release
-        run: tar -zcvf urlmatic-${{ github.sha }}-linux-x86_64.tgz target/release/urlmatic
+        run: tar -zcvf urlmatic-${{ github.ref }}-linux-x86_64.tgz --strip-components 2 target/release/urlmatic
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -38,6 +38,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: urlmatic-${{ github.sha }}-linux-x86_64.tgz
-          asset_name: urlmatic-${{ github.sha }}-linux-x86_64.tgz
+          asset_path: urlmatic-${{ github.ref }}-linux-x86_64.tgz
+          asset_name: urlmatic-${{ github.ref }}-linux-x86_64.tgz
           asset_content_type: application/x-tgz
