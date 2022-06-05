@@ -1,6 +1,6 @@
 [package]
 name = "urlmatic"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 description = "Slice and dice URLs on the command line"
 repository = "https://github.com/bww/urlmatic"

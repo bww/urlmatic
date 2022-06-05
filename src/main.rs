@@ -17,9 +17,9 @@ pub struct Options {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-  #[clap()]
+  #[clap(about="Resolve a relative URL against an absolute base")]
   Resolve(ResolveOptions),
-  #[clap()]
+  #[clap(about="Trim components from the end of a URL's path")]
   Trim(TrimOptions),
 }
 
