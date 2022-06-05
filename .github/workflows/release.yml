@@ -20,7 +20,7 @@ jobs:
       - name: Build
         run: cargo build --release --all-features
       - name: Package release
-        run: tar --strip-components 2 -zcvf urlmatic-${{ github.ref_name }}-linux-x86_64.tgz target/release/urlmatic
+        run: tar -zcvf urlmatic-${{ github.ref_name }}-linux-x86_64.tgz target/release/urlmatic
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
