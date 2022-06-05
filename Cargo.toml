@@ -1,8 +1,8 @@
 [package]
 name = "urlmatic"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-description = "Generate a series of timestamps between two bounds."
+description = "Slice and dice URLs on the command line"
 repository = "https://github.com/bww/urlmatic"
 readme = "README.md"
 license = "BSD-3-Clause"
