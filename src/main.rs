@@ -2,6 +2,7 @@ mod error;
 
 use std::io::{self, Read};
 use std::process;
+use std::collections;
 
 use url;
 use clap::{Parser, Subcommand, Args};
@@ -21,6 +22,8 @@ enum Command {
   Resolve(ResolveOptions),
   #[clap(about="Trim components from the end of a URL's path")]
   Trim(TrimOptions),
+  #[clap(about="Decode URL-encoded parameters")]
+  Decode(DecodeOptions),
 }
 
 #[derive(Args, Debug)]
@@ -35,6 +38,13 @@ struct TrimOptions {
   #[clap(long, short='n')]
   count: i32,
   url: String,
+}
+
+#[derive(Args, Debug)]
+struct DecodeOptions {
+  #[clap(long, short='s')]
+  select: Option<Vec<String>>,
+  query: String,
 }
 
 fn main() {
@@ -52,6 +62,7 @@ fn cmd() -> Result<(), error::Error> {
   match &opts.command {
     Command::Resolve(sub) => resolve(&opts, &sub),
     Command::Trim(sub)    => trim(&opts, &sub),
+    Command::Decode(sub)  => decode(&opts, &sub),
   }
 }
 
@@ -95,5 +106,25 @@ fn trim(_: &Options, cmd: &TrimOptions) -> Result<(), error::Error> {
   base.set_path(&trim.join("/"));
   println!("{}", base);
   
+  Ok(())
+}
+
+fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
+  let select: Option<collections::HashSet<String>> = match &cmd.select {
+    Some(select) => Some(collections::HashSet::from_iter(select.iter().cloned())),
+    None => None,
+  };
+  
+  let parsed = url::form_urlencoded::parse(&cmd.query.as_bytes());
+  for (k, v) in parsed {
+    match &select {
+      Some(select) => {
+        if select.contains(k.as_ref()) {
+          println!("{}", v);
+        }
+      },
+      None => println!("{}: {}", k, v),
+    }
+  }
   Ok(())
 }
