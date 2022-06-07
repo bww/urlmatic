@@ -111,7 +111,7 @@ fn trim(_: &Options, cmd: &TrimOptions) -> Result<(), error::Error> {
 
 fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
   let select: Option<collections::HashSet<String>> = match &cmd.select {
-    Some(select) => Some(collections::HashSet::from_iter(select.iter().cloned())),
+    Some(select) => Some(collections::HashSet::from_iter(select.iter().flat_map(|e| e.split(",").map(|e| e.to_string())))),
     None => None,
   };
   
@@ -126,5 +126,6 @@ fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
       None => println!("{}: {}", k, v),
     }
   }
+  
   Ok(())
 }
