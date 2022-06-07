@@ -24,6 +24,8 @@ enum Command {
   Trim(TrimOptions),
   #[clap(about="Decode URL-encoded parameters")]
   Decode(DecodeOptions),
+  #[clap(about="Encode URL-encoded parameters")]
+  Encode(EncodeOptions),
 }
 
 #[derive(Args, Debug)]
@@ -47,6 +49,11 @@ struct DecodeOptions {
   query: String,
 }
 
+#[derive(Args, Debug)]
+struct EncodeOptions {
+  pairs: Vec<String>,
+}
+
 fn main() {
   match cmd() {
     Ok(_)     => {},
@@ -63,6 +70,7 @@ fn cmd() -> Result<(), error::Error> {
     Command::Resolve(sub) => resolve(&opts, &sub),
     Command::Trim(sub)    => trim(&opts, &sub),
     Command::Decode(sub)  => decode(&opts, &sub),
+    Command::Encode(sub)  => encode(&opts, &sub),
   }
 }
 
@@ -116,6 +124,14 @@ fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
   };
   
   let parsed = url::form_urlencoded::parse(&cmd.query.as_bytes());
+  let mut widest: usize = 0;
+  for (k, v) in parsed {
+    let n = k.chars().count();
+    if n > widest {
+      widest = n;
+    }
+  }
+  
   for (k, v) in parsed {
     match &select {
       Some(select) => {
@@ -123,9 +139,24 @@ fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
           println!("{}", v);
         }
       },
-      None => println!("{}: {}", k, v),
+      None => {
+        let mut buf = String::new();
+        let n = k.chars().count();
+        let p = widest-n;
+        if p > 0 {
+          buf.push_str(&" ".repeat(p));
+        }
+        buf.push_str(&k);
+        buf.push_str(": ");
+        buf.push_str(&v);
+        println!("{}", buf);
+      },
     }
   }
   
+  Ok(())
+}
+
+fn encode(_: &Options, cmd: &EncodeOptions) -> Result<(), error::Error> {
   Ok(())
 }
