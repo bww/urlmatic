@@ -125,7 +125,7 @@ fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
   
   let parsed = url::form_urlencoded::parse(&cmd.query.as_bytes());
   let mut widest: usize = 0;
-  for (k, v) in parsed {
+  for (k, _) in parsed {
     let n = k.chars().count();
     if n > widest {
       widest = n;
@@ -158,5 +158,23 @@ fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
 }
 
 fn encode(_: &Options, cmd: &EncodeOptions) -> Result<(), error::Error> {
+  let mut params: collections::HashMap<&str, Option<&str>> = collections::HashMap::new();
+  
+  for e in &cmd.pairs {
+    match e.find("=") {
+      Some(x) => params.insert(&e[..x], Some(&e[x+1..])),
+      None => params.insert(&e, None),
+    };
+  }
+  
+  let mut enc = url::form_urlencoded::Serializer::new(String::new());
+  for (k, v) in &params {
+    match v {
+      Some(v) => enc.append_pair(k, v),
+      None => enc.append_key_only(k),
+    };
+  }
+  
+  println!("{}", enc.finish());
   Ok(())
 }
