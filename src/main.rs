@@ -159,7 +159,6 @@ fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
 
 fn encode(_: &Options, cmd: &EncodeOptions) -> Result<(), error::Error> {
   let mut params: collections::HashMap<&str, Option<&str>> = collections::HashMap::new();
-  
   for e in &cmd.pairs {
     match e.find("=") {
       Some(x) => params.insert(&e[..x], Some(&e[x+1..])),
