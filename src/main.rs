@@ -46,7 +46,7 @@ struct TrimOptions {
 struct DecodeOptions {
   #[clap(long, short='s')]
   select: Option<Vec<String>>,
-  query: String,
+  query: Option<String>,
 }
 
 #[derive(Args, Debug)]
@@ -123,7 +123,17 @@ fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
     None => None,
   };
   
-  let parsed = url::form_urlencoded::parse(&cmd.query.as_bytes());
+  let query = match cmd.query.to_owned() {
+    Some(query) => query,
+    None => {
+      let mut buf = String::new();
+      io::stdin().read_to_string(&mut buf)?;
+      buf
+    },
+  };
+  
+  let parsed = url::form_urlencoded::parse(&query.as_bytes());
+
   let mut widest: usize = 0;
   for (k, _) in parsed {
     let n = k.chars().count();
