@@ -44,13 +44,15 @@ struct TrimOptions {
 
 #[derive(Args, Debug)]
 struct DecodeOptions {
-  #[clap(long, short='s')]
+  #[clap(long, short='s', help="Select keys to print. When provided the value for each key specified is printed on its own line, in the order they are encountered. Specify repeatedly to select multiple keys.")]
   select: Option<Vec<String>>,
+  #[clap(help="The query string to evaluate; if a query is not provided it is read from STDIN")]
   query: Option<String>,
 }
 
 #[derive(Args, Debug)]
 struct EncodeOptions {
+  #[clap(help="The key/value pairs to evaluate, provided in the form 'KEY=VALUE'")]
   pairs: Vec<String>,
 }
 
