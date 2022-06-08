@@ -22,9 +22,9 @@ enum Command {
   Resolve(ResolveOptions),
   #[clap(about="Trim components from the end of a URL's path")]
   Trim(TrimOptions),
-  #[clap(about="Decode URL-encoded parameters")]
+  #[clap(about="Decode URL-encoded parameter lists")]
   Decode(DecodeOptions),
-  #[clap(about="Encode URL-encoded parameters")]
+  #[clap(about="Encode URL-encoded parameter lists")]
   Encode(EncodeOptions),
 }
 
@@ -133,7 +133,7 @@ fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
   };
   
   let parsed = url::form_urlencoded::parse(&query.as_bytes());
-
+  
   let mut widest: usize = 0;
   for (k, _) in parsed {
     let n = k.chars().count();
