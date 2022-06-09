@@ -30,21 +30,23 @@ enum Command {
 
 #[derive(Args, Debug)]
 struct ResolveOptions {
-  #[clap(long)]
-  base: Option<String>,
-  url: String,
+  #[clap(long, short='b', help="The base URL to resolve against")]
+  base: String,
+  #[clap(help="The URL to resolve against the base; if a URL is not provided it is read from STDIN")]
+  url: Option<String>,
 }
 
 #[derive(Args, Debug)]
 struct TrimOptions {
-  #[clap(long, short='n')]
+  #[clap(long, short='n', help="The number of path components to remove from the end of the URL")]
   count: i32,
-  url: String,
+  #[clap(help="The URL to trim; if a URL is not provided it is read from STDIN")]
+  url: Option<String>,
 }
 
 #[derive(Args, Debug)]
 struct DecodeOptions {
-  #[clap(long, short='s', help="Select keys to print. When provided the value for each key specified is printed on its own line, in the order they are encountered. Specify repeatedly to select multiple keys.")]
+  #[clap(long, short='s', name="KEY[,KEY...]", help="Select keys to print. When provided the value for each key specified is printed on its own line, in the order they are encountered. Specify repeatedly to select multiple keys.")]
   select: Option<Vec<String>>,
   #[clap(help="The query string to evaluate; if a query is not provided it is read from STDIN")]
   query: Option<String>,
@@ -77,8 +79,8 @@ fn cmd() -> Result<(), error::Error> {
 }
 
 fn resolve(_: &Options, cmd: &ResolveOptions) -> Result<(), error::Error> {
-  let base = match cmd.base.to_owned() {
-    Some(base) => base,
+  let url = match &cmd.url {
+    Some(url) => url.to_owned(),
     None => {
       let mut buf = String::new();
       io::stdin().read_to_string(&mut buf)?;
@@ -86,16 +88,25 @@ fn resolve(_: &Options, cmd: &ResolveOptions) -> Result<(), error::Error> {
     },
   };
   
-  let base = url::Url::parse(&base)?;
-  let resolved = base.join(&cmd.url)?;
+  let base = url::Url::parse(&cmd.base)?;
+  let resolved = base.join(&url)?;
   println!("{}", resolved);
   
   Ok(())
 }
 
 fn trim(_: &Options, cmd: &TrimOptions) -> Result<(), error::Error> {
-  let mut base = url::Url::parse(&cmd.url)?;
-  let mut segs = base.path_segments().ok_or_else(|| error::Error::InvalidArgument(format!("URL has no path: {}", &cmd.url)))?;
+  let url = match &cmd.url {
+    Some(url) => url.to_owned(),
+    None => {
+      let mut buf = String::new();
+      io::stdin().read_to_string(&mut buf)?;
+      buf
+    },
+  };
+  
+  let mut base = url::Url::parse(&url)?;
+  let mut segs = base.path_segments().ok_or_else(|| error::Error::InvalidArgument(format!("URL has no path: {}", &url)))?;
   let mut trim: Vec<&str> = Vec::new();
   
   loop {
