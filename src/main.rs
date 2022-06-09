@@ -54,9 +54,9 @@ struct DecodeOptions {
 
 #[derive(Args, Debug)]
 struct EncodeOptions {
-  #[clap(long="key", short='k', help="The key to encode. Each key must have a corresponding --value, which is matched up in the order they are provided.")]
+  #[clap(long="key", short='k', name="KEY", help="A key to encode. Each key must have a corresponding --value, which is matched up in the order they are provided.")]
   keys: Vec<String>,
-  #[clap(long="value", short='v', help="The value to encode. Each key must have a corresponding --key, which is matched up in the order they are provided.")]
+  #[clap(long="value", short='v', name="VALUE", help="A value to encode. Each key must have a corresponding --key, which is matched up in the order they are provided.")]
   values: Vec<String>,
   #[clap(help="The key/value pairs to evaluate, provided in the form 'KEY=VALUE'")]
   pairs: Vec<String>,
