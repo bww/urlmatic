@@ -54,9 +54,9 @@ struct DecodeOptions {
 
 #[derive(Args, Debug)]
 struct EncodeOptions {
-  #[clap(long="key", short='k', name="KEY", help="A key to encode. Each key must have a corresponding --value, which is matched up in the order they are provided.")]
+  #[clap(long="key", short='k', name="KEY", help="A key to encode. Each key must have a corresponding --value.")]
   keys: Vec<String>,
-  #[clap(long="value", short='v', name="VALUE", help="A value to encode. Each key must have a corresponding --key, which is matched up in the order they are provided.")]
+  #[clap(long="value", short='v', name="VALUE", help="A value to encode. Each key must have a corresponding --key.")]
   values: Vec<String>,
   #[clap(help="The key/value pairs to evaluate, provided in the form 'KEY=VALUE'")]
   pairs: Vec<String>,
@@ -194,7 +194,7 @@ fn encode(_: &Options, cmd: &EncodeOptions) -> Result<(), error::Error> {
   }
   
   if cmd.keys.len() != cmd.values.len() {
-    return Err(error::Error::InvalidArgument("Provided --key and --value flags are not balanced".to_string()));
+    return Err(error::Error::InvalidArgument("Provided --key and --value flags are not balanced. Each --key must have a corresponding --value, which are matched up in the order they are specified.".to_string()));
   }
   for i in 0..cmd.keys.len() {
     params.insert(&cmd.keys[i], Some(&cmd.values[i]));
