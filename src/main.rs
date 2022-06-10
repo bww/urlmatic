@@ -22,6 +22,8 @@ enum Command {
   Resolve(ResolveOptions),
   #[clap(about="Trim components from the end of a URL's path")]
   Trim(TrimOptions),
+  #[clap(about="Rewrite URL components")]
+  Rewrite(RewriteOptions),
   #[clap(about="Decode URL-encoded parameter lists")]
   Decode(DecodeOptions),
   #[clap(about="Encode URL-encoded parameter lists")]
@@ -41,6 +43,26 @@ struct TrimOptions {
   #[clap(long, short='n', help="The number of path components to remove from the end of the URL")]
   count: i32,
   #[clap(help="The URL to trim; if a URL is not provided it is read from STDIN")]
+  url: Option<String>,
+}
+
+#[derive(Args, Debug)]
+struct RewriteOptions {
+  #[clap(long, short='s', help="Set the scheme")]
+  scheme: Option<String>,
+  #[clap(long, short='H', help="Set the host")]
+  host: Option<String>,
+  #[clap(long, short='u', help="Set the authority username")]
+  username: Option<String>,
+  #[clap(long, short='w', help="Set the authority password")]
+  password: Option<String>,
+  #[clap(long, short='p', help="Set the path")]
+  path: Option<String>,
+  #[clap(long, short='q', help="Set the query")]
+  query: Option<String>,
+  #[clap(long, short='f', help="Set the fragment")]
+  fragment: Option<String>,
+  #[clap(help="The URL to rewrite; if a URL is not provided it is read from STDIN")]
   url: Option<String>,
 }
 
@@ -77,6 +99,7 @@ fn cmd() -> Result<(), error::Error> {
   match &opts.command {
     Command::Resolve(sub) => resolve(&opts, &sub),
     Command::Trim(sub)    => trim(&opts, &sub),
+    Command::Rewrite(sub) => rewrite(&opts, &sub),
     Command::Decode(sub)  => decode(&opts, &sub),
     Command::Encode(sub)  => encode(&opts, &sub),
   }
@@ -131,6 +154,43 @@ fn trim(_: &Options, cmd: &TrimOptions) -> Result<(), error::Error> {
   base.set_path(&trim.join("/"));
   println!("{}", base);
   
+  Ok(())
+}
+
+fn rewrite(_: &Options, cmd: &RewriteOptions) -> Result<(), error::Error> {
+  let url = match &cmd.url {
+    Some(url) => url.to_owned(),
+    None => {
+      let mut buf = String::new();
+      io::stdin().read_to_string(&mut buf)?;
+      buf
+    },
+  };
+  
+  let mut base = url::Url::parse(&url)?;
+  if let Some(v) = &cmd.scheme {
+    base.set_scheme(v);
+  }
+  if let Some(v) = &cmd.host {
+    base.set_host(Some(v))?;
+  }
+  if let Some(v) = &cmd.username {
+    base.set_username(v);
+  }
+  if let Some(v) = &cmd.password {
+    base.set_password(Some(v));
+  }
+  if let Some(v) = &cmd.path {
+    base.set_path(v);
+  }
+  if let Some(v) = &cmd.query {
+    base.set_query(Some(v));
+  }
+  if let Some(v) = &cmd.fragment {
+    base.set_fragment(Some(v));
+  }
+  
+  println!("{}", base);
   Ok(())
 }
 
