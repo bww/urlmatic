@@ -31,7 +31,7 @@ $ urlmatic rewrite \
 > https://admin@another.com/cgi-bin/q?offset=0&length=100#anchor-name
 ```
 
-### Encode a Query String as `application/x-www-form-urlencoded` data
+### Encode a Query String as `x-www-form-urlencoded` data
 URL-encode form data form/query data.
 
 ```
@@ -43,7 +43,7 @@ $ urlmatic encode yep=👍 nope=👎
 > nope=%F0%9F%91%8E&yep=%F0%9F%91%8D
 ```
 
-### Decode a Query String as `application/x-www-form-urlencoded` data
+### Decode a Query String as `x-www-form-urlencoded` data
 URL-decode form data and extract values.
 
 ```
