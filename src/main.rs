@@ -133,27 +133,14 @@ fn trim(_: &Options, cmd: &TrimOptions) -> Result<(), error::Error> {
   };
   
   let mut base = url::Url::parse(&url)?;
-  let mut segs = base.path_segments().ok_or_else(|| error::Error::InvalidArgument(format!("URL has no path: {}", &url)))?;
-  let mut trim: Vec<&str> = Vec::new();
-  
-  loop {
-    if let Some(seg) = segs.next() {
-      trim.push(seg);
-    }else{
-      break;
+  { // scope `segs` so we drop our mutable borrow before we try to use `base` immutably
+    let mut segs = base.path_segments_mut().map_err(|_| error::Error::InvalidArgument(format!("URL has no path: {}", &url)))?;
+    for _ in 0..cmd.count {
+      segs.pop();
     }
   }
-  
-  for _ in 0..cmd.count {
-    match trim.pop() {
-      Some(_) => {},
-      None => break,
-    };
-  }
-  
-  base.set_path(&trim.join("/"));
-  println!("{}", base);
-  
+
+  println!("{}", &base);
   Ok(())
 }
 
@@ -169,16 +156,16 @@ fn rewrite(_: &Options, cmd: &RewriteOptions) -> Result<(), error::Error> {
   
   let mut base = url::Url::parse(&url)?;
   if let Some(v) = &cmd.scheme {
-    base.set_scheme(v);
+    base.set_scheme(v).map_err(|_| error::Error::InvalidArgument(format!("Cannot set scheme: {}", v)))?;
   }
   if let Some(v) = &cmd.host {
     base.set_host(Some(v))?;
   }
   if let Some(v) = &cmd.username {
-    base.set_username(v);
+    base.set_username(v).map_err(|_| error::Error::InvalidArgument(format!("Cannot set username: {}", v)))?;
   }
   if let Some(v) = &cmd.password {
-    base.set_password(Some(v));
+    base.set_password(Some(v)).map_err(|_| error::Error::InvalidArgument(format!("Cannot set password: {}", v)))?;
   }
   if let Some(v) = &cmd.path {
     base.set_path(v);

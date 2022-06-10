@@ -6,12 +6,11 @@ use url;
 
 #[derive(Debug)]
 pub enum Error {
-  NoSuchCommand(String),
   InvalidArgument(String),
-  MissingArgument(String),
   ParseIntError(num::ParseIntError),
   ParseUrlError(url::ParseError),
   IOError(io::Error),
+  UndefinedError,
 }
 
 impl From<std::num::ParseIntError> for Error {
@@ -32,15 +31,20 @@ impl From<io::Error> for Error {
   }
 }
 
+impl From<()> for Error {
+  fn from(_: ()) -> Self {
+    Self::UndefinedError
+  }
+}
+
 impl fmt::Display for Error {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
-      Self::NoSuchCommand(msg) => write!(f, "No such command: {}", msg),
       Self::InvalidArgument(msg) => write!(f, "Invalid argument: {}", msg),
-      Self::MissingArgument(msg) => write!(f, "Missing argument: {}", msg),
       Self::ParseIntError(err) => err.fmt(f),
       Self::ParseUrlError(err) => err.fmt(f),
       Self::IOError(err) => err.fmt(f),
+      Self::UndefinedError => write!(f, "Undefined error"),
     }
   }
 }
