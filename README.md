@@ -16,3 +16,11 @@ Removes the specified number of components from the end of a URL's path and prin
 $ urlmatic trim --count 2 'https://www.example.com/documents/letter.html?length=100'
 > https://www.example.com/?length=100
 ```
+
+### Rewrite a URL by replacing components
+Replace specific components in a URL and print the result.
+
+```
+urlmatic rewrite --host another.com --query 'offset=100&length=50' https://example.com/query`
+> https://another.com/query?offset=100&length=50
+```
