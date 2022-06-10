@@ -17,10 +17,56 @@ $ urlmatic trim --count 2 'https://www.example.com/documents/letter.html?length=
 > https://www.example.com/?length=100
 ```
 
-### Rewrite a URL by replacing components
+### Rewrite a URL by Replacing Components
 Replace specific components in a URL and print the result.
 
 ```
-urlmatic rewrite --host another.com --query 'offset=100&length=50' https://example.com/query`
-> https://another.com/query?offset=100&length=50
+$ urlmatic rewrite \
+    --username admin \
+    --host another.com \
+    --path /cgi-bin/q \
+    --query 'offset=0&length=100' \
+    --fragment 'anchor-name' \
+    https://example.com/query
+> https://admin@another.com/cgi-bin/q?offset=0&length=100#anchor-name
+```
+
+### Encode a Query String as `application/x-www-form-urlencoded` data
+URL-encode form data form/query data.
+
+```
+$ urlmatic encode -k yep -v 👍 -k nope -v 👎
+> yep=%F0%9F%91%8D&nope=%F0%9F%91%8E
+```
+```
+$ urlmatic encode yep=👍 nope=👎
+> nope=%F0%9F%91%8E&yep=%F0%9F%91%8D
+```
+
+### Decode a Query String as `application/x-www-form-urlencoded` data
+URL-decode form data and extract values.
+
+```
+$ urlmatic decode 'yep=%F0%9F%91%8D&nope=%F0%9F%91%8E'
+>  yep: 👍
+> nope: 👎
+```
+```
+$ urlmatic decode --select yep 'yep=%F0%9F%91%8D&nope=%F0%9F%91%8E'
+> 👍
+```
+```
+$ urlmatic decode --select nope,yep 'yep=%F0%9F%91%8D&nope=%F0%9F%91%8E'
+> 👍
+> 👎
+```
+
+### Put it All Together
+Compose and modify a URL using a few commands.
+
+```
+$ echo 'https://example.com/path/to/query' |
+    urlmatic rewrite --host another.com --query $(urlmatic encode -k yep -v 👍) |
+    urlmatic trim --count 2
+> https://another.com/path?yep=%F0%9F%91%8D
 ```
