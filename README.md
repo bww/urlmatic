@@ -1,5 +1,24 @@
 # URL-matic
-Perform some useful manipulation of URLs. This thing doesn't do much yet.
+Perform some useful manipulation of URLs, such as:
+
+* Resolve a URL or path against a base,
+* Trim path components from the end of a URL,
+* Rewrite a URL by replacing the host, path, query, fragment, etc,
+* Encode and decode query strings.
+
+## Installing
+
+You can install _URL-matic_ via [Homebrew](https://brew.sh/) on macOS as follows:
+
+```
+$ brew install bww/stable/urlmatic 
+```
+
+If you have a Rust toolchain installed, you can also install from Cargo:
+
+```
+$ cargo install urlmatic
+```
 
 ### Resolve a URL Against a Base
 Resolves a relative URL against the provided base URL and prints the result.
