@@ -20,6 +20,8 @@ If you have a Rust toolchain installed, you can also install from Cargo:
 $ cargo install urlmatic
 ```
 
+## Usage Examples
+
 ### Resolve a URL Against a Base
 Resolves a relative URL against the provided base URL and prints the result.
 
