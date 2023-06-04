@@ -6,21 +6,12 @@ on:
       - 'v*'  # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
-  build:
+  release:
     name: Create Release
     runs-on: ubuntu-latest
+    outputs:
+      artifact_upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: x86_64-unknown-linux-gnu
-          override: true
-      - name: Build
-        run: cargo build --release --all-features
-      - name: Package release
-        run: tar -zcvf urlmatic-${{ github.ref_name }}-linux-x86_64.tgz target/release/urlmatic
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -31,13 +22,40 @@ jobs:
           release_name: ${{ github.ref }}
           draft: true
           prerelease: false
+
+  artifacts:
+    needs: [ release ]
+    name: Build Artifacts
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+      - name: Build
+        run: cargo build --release --all-features --target ${{ matrix.target }}
+      - name: Package release
+        run: |
+          mkdir -p target/urlmatic-${{ github.sha }}/bin && cp target/${{ matrix.target }}/release/urlmatic target/urlmatic-${{ github.sha }}/bin/urlmatic
+          tar -zcvf urlmatic-${{ github.ref_name }}-${{ matrix.target }}.tgz --strip-components 1 target/urlmatic-${{ github.sha }}/bin/urlmatic
       - name: Upload artifact
-        id: upload_artifact_linux_amd64
         uses: actions/upload-release-asset@v1
-        env:
+        env: # GITHUB_TOKEN must be given write permission in Repo > Settings > Actions
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: urlmatic-${{ github.ref_name }}-linux-x86_64.tgz
-          asset_name: urlmatic-${{ github.ref_name }}-linux-x86_64.tgz
+          upload_url: ${{ needs.release.outputs.artifact_upload_url }}
+          asset_path: urlmatic-${{ github.ref_name }}-${{ matrix.target }}.tgz
+          asset_name: urlmatic-${{ github.ref_name }}-${{ matrix.target }}.tgz
           asset_content_type: application/x-tgz
