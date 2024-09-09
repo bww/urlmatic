@@ -189,14 +189,19 @@ fn decode(_: &Options, cmd: &DecodeOptions) -> Result<(), error::Error> {
   
   let query = match cmd.query.to_owned() {
     Some(query) => query,
-    None => {
+    None        => {
       let mut buf = String::new();
       io::stdin().read_to_string(&mut buf)?;
       buf
     },
   };
+
+  let query = match query.split_once('?') {
+    Some((_, r)) => r,
+    None         => &query,
+  };
   
-  let parsed = url::form_urlencoded::parse(&query.as_bytes());
+  let parsed = url::form_urlencoded::parse(query.as_bytes());
   
   let mut widest: usize = 0;
   for (k, _) in parsed {
