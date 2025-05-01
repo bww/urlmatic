@@ -4,8 +4,9 @@ use std::io::{self, Read};
 use std::process;
 use std::collections;
 
-use url;
 use clap::{Parser, Subcommand, Args};
+use handlebars::Handlebars;
+use serde_json::json;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -28,6 +29,8 @@ enum Command {
   Decode(DecodeOptions),
   #[clap(about="Encode URL-encoded parameter lists")]
   Encode(EncodeOptions),
+  #[clap(about="Format URL components")]
+  Format(FormatOptions),
 }
 
 #[derive(Args, Debug)]
@@ -84,6 +87,14 @@ struct EncodeOptions {
   pairs: Vec<String>,
 }
 
+#[derive(Args, Debug)]
+struct FormatOptions {
+  #[clap(long="format", short='f', help="The Handlebars formatting template")]
+  format: String,
+  #[clap(help="The URL to format; if a URL is not provided it is read from STDIN")]
+  url: Option<String>,
+}
+
 fn main() {
   match cmd() {
     Ok(_)     => {},
@@ -102,35 +113,20 @@ fn cmd() -> Result<(), error::Error> {
     Command::Rewrite(sub) => rewrite(&opts, &sub),
     Command::Decode(sub)  => decode(&opts, &sub),
     Command::Encode(sub)  => encode(&opts, &sub),
+    Command::Format(sub)  => format(&opts, &sub),
   }
 }
 
 fn resolve(_: &Options, cmd: &ResolveOptions) -> Result<(), error::Error> {
-  let url = match &cmd.url {
-    Some(url) => url.to_owned(),
-    None => {
-      let mut buf = String::new();
-      io::stdin().read_to_string(&mut buf)?;
-      buf
-    },
-  };
-  
+  let url = resolve_param(&cmd.url)?;
   let base = url::Url::parse(&cmd.base)?;
   let resolved = base.join(&url)?;
   println!("{}", resolved);
-  
   Ok(())
 }
 
 fn trim(_: &Options, cmd: &TrimOptions) -> Result<(), error::Error> {
-  let url = match &cmd.url {
-    Some(url) => url.to_owned(),
-    None => {
-      let mut buf = String::new();
-      io::stdin().read_to_string(&mut buf)?;
-      buf
-    },
-  };
+  let url = resolve_param(&cmd.url)?;
   
   let mut base = url::Url::parse(&url)?;
   { // scope `segs` so we drop our mutable borrow before we try to use `base` immutably
@@ -145,14 +141,7 @@ fn trim(_: &Options, cmd: &TrimOptions) -> Result<(), error::Error> {
 }
 
 fn rewrite(_: &Options, cmd: &RewriteOptions) -> Result<(), error::Error> {
-  let url = match &cmd.url {
-    Some(url) => url.to_owned(),
-    None => {
-      let mut buf = String::new();
-      io::stdin().read_to_string(&mut buf)?;
-      buf
-    },
-  };
+  let url = resolve_param(&cmd.url)?;
   
   let mut base = url::Url::parse(&url)?;
   if let Some(v) = &cmd.scheme {
@@ -262,4 +251,25 @@ fn encode(_: &Options, cmd: &EncodeOptions) -> Result<(), error::Error> {
   
   println!("{}", enc.finish());
   Ok(())
+}
+
+fn format(_: &Options, cmd: &FormatOptions) -> Result<(), error::Error> {
+  let url = resolve_param(&cmd.url)?;
+  let mut base = url::Url::parse(&url)?;
+	let mut tmpl = Handlebars::new();
+	let data = tmpl.render_template(&cmd.format, &json!(base))?;
+  println!("{}", &data);
+  Ok(())
+}
+
+fn resolve_param(param: &Option<String>) -> Result<String, error::Error> {
+  let res = match param {
+    Some(val) => val.to_owned(),
+    None => {
+      let mut buf = String::new();
+      io::stdin().read_to_string(&mut buf)?;
+      buf
+    },
+  };
+	Ok(res)
 }

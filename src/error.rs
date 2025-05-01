@@ -2,14 +2,13 @@ use std::io;
 use std::fmt;
 use std::num;
 
-use url;
-
 #[derive(Debug)]
 pub enum Error {
   InvalidArgument(String),
   ParseIntError(num::ParseIntError),
   ParseUrlError(url::ParseError),
   IOError(io::Error),
+  RenderError(handlebars::RenderError),
   UndefinedError,
 }
 
@@ -44,6 +43,7 @@ impl fmt::Display for Error {
       Self::ParseIntError(err) => err.fmt(f),
       Self::ParseUrlError(err) => err.fmt(f),
       Self::IOError(err) => err.fmt(f),
+      Self::RenderError(err) => err.fmt(f),
       Self::UndefinedError => write!(f, "Undefined error"),
     }
   }
