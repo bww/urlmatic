@@ -89,7 +89,7 @@ struct EncodeOptions {
 
 #[derive(Args, Debug)]
 struct FormatOptions {
-  #[clap(long="format", short='f', help="The Handlebars formatting template")]
+  #[clap(long="template", short='t', help="The Handlebars formatting template")]
   format: String,
   #[clap(help="The URL to format; if a URL is not provided it is read from STDIN")]
   url: Option<String>,
@@ -230,7 +230,7 @@ fn encode(_: &Options, cmd: &EncodeOptions) -> Result<(), error::Error> {
   for e in &cmd.pairs {
     match e.find("=") {
       Some(x) => params.insert(&e[..x], Some(&e[x+1..])),
-      None => params.insert(&e, None),
+      None => params.insert(e, None),
     };
   }
   
@@ -255,9 +255,22 @@ fn encode(_: &Options, cmd: &EncodeOptions) -> Result<(), error::Error> {
 
 fn format(_: &Options, cmd: &FormatOptions) -> Result<(), error::Error> {
   let url = resolve_param(&cmd.url)?;
-  let mut base = url::Url::parse(&url)?;
-	let mut tmpl = Handlebars::new();
-	let data = tmpl.render_template(&cmd.format, &json!(base))?;
+  let base = url::Url::parse(&url)?;
+	let host = match base.host() {
+		Some(host) => host.to_string(),
+		None			 => "".to_owned(),
+	};
+	let params = json!({
+		"scheme":		base.scheme(),
+		"host":			host,
+		"username": base.username(),
+		"password": base.password(),
+		"path":			base.path(),
+		"query":		base.query(),
+		"fragment": base.fragment(),
+	});
+	let tmpl = Handlebars::new();
+	let data = tmpl.render_template(&cmd.format, &params)?;
   println!("{}", &data);
   Ok(())
 }

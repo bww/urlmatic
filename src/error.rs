@@ -30,6 +30,12 @@ impl From<io::Error> for Error {
   }
 }
 
+impl From<handlebars::RenderError> for Error {
+  fn from(err: handlebars::RenderError) -> Self {
+    Self::RenderError(err)
+  }
+}
+
 impl From<()> for Error {
   fn from(_: ()) -> Self {
     Self::UndefinedError
