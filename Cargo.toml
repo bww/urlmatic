@@ -1,6 +1,6 @@
 [package]
 name = "urlmatic"
-version = "0.5.0"
+version = "0.6.1"
 edition = "2021"
 description = "Slice and dice URLs on the command line"
 repository = "https://github.com/bww/urlmatic"
@@ -8,5 +8,7 @@ readme = "README.md"
 license = "BSD-3-Clause"
 
 [dependencies]
-url = "2.2.2"
+url = { version = "2.2.2", features = ["serde"] }
 clap = { version="3.1", features=["derive"] }
+handlebars = "6.3.2"
+serde_json = "1.0.140"
