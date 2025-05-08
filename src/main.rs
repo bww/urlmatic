@@ -256,21 +256,21 @@ fn encode(_: &Options, cmd: &EncodeOptions) -> Result<(), error::Error> {
 fn format(_: &Options, cmd: &FormatOptions) -> Result<(), error::Error> {
   let url = resolve_param(&cmd.url)?;
   let base = url::Url::parse(&url)?;
-	let host = match base.host() {
-		Some(host) => host.to_string(),
-		None			 => "".to_owned(),
-	};
-	let params = json!({
-		"scheme":		base.scheme(),
-		"host":			host,
-		"username": base.username(),
-		"password": base.password(),
-		"path":			base.path(),
-		"query":		base.query(),
-		"fragment": base.fragment(),
-	});
-	let tmpl = Handlebars::new();
-	let data = tmpl.render_template(&cmd.format, &params)?;
+  let host = match base.host() {
+    Some(host) => host.to_string(),
+    None       => "".to_owned(),
+  };
+  let params = json!({
+    "scheme":   base.scheme(),
+    "host":     host,
+    "username": base.username(),
+    "password": base.password(),
+    "path":     base.path(),
+    "query":    base.query(),
+    "fragment": base.fragment(),
+  });
+  let tmpl = Handlebars::new();
+  let data = tmpl.render_template(&cmd.format, &params)?;
   println!("{}", &data);
   Ok(())
 }
@@ -284,5 +284,5 @@ fn resolve_param(param: &Option<String>) -> Result<String, error::Error> {
       buf
     },
   };
-	Ok(res)
+  Ok(res)
 }
